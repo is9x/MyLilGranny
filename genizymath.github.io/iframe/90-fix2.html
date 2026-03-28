@@ -65,6 +65,8 @@
 
   <script>
     (function hardenOfflineNetworking() {
+      var blockedBlobUrl = URL.createObjectURL(new Blob([""], { type: "text/plain" }));
+
       function toAbsoluteUrl(input) {
         try {
           return new URL(String(input), window.location.href);
@@ -83,7 +85,8 @@
       var originalFetch = window.fetch;
       window.fetch = function (input, init) {
         if (!isAllowedUrl(input)) {
-          return Promise.reject(new Error("Blocked external fetch in offline mode: " + String(input)));
+          console.warn("Blocked external fetch in offline mode:", String(input));
+          return Promise.resolve(new Response("", { status: 204, statusText: "No Content" }));
         }
         return originalFetch.call(this, input, init);
       };
@@ -91,7 +94,8 @@
       var originalXhrOpen = XMLHttpRequest.prototype.open;
       XMLHttpRequest.prototype.open = function (method, url) {
         if (!isAllowedUrl(url)) {
-          throw new Error("Blocked external XHR in offline mode: " + String(url));
+          console.warn("Blocked external XHR in offline mode:", String(url));
+          url = blockedBlobUrl;
         }
         return originalXhrOpen.apply(this, arguments);
       };
@@ -100,7 +104,8 @@
         var originalSendBeacon = navigator.sendBeacon.bind(navigator);
         navigator.sendBeacon = function (url, data) {
           if (!isAllowedUrl(url)) {
-            return false;
+            console.warn("Blocked external sendBeacon in offline mode:", String(url));
+            return true;
           }
           return originalSendBeacon(url, data);
         };
@@ -110,7 +115,14 @@
         var OriginalWebSocket = window.WebSocket;
         window.WebSocket = function (url, protocols) {
           if (!isAllowedUrl(url)) {
-            throw new Error("Blocked external WebSocket in offline mode: " + String(url));
+            console.warn("Blocked external WebSocket in offline mode:", String(url));
+            return {
+              readyState: 3,
+              close: function () {},
+              send: function () {},
+              addEventListener: function () {},
+              removeEventListener: function () {}
+            };
           }
           return new OriginalWebSocket(url, protocols);
         };
