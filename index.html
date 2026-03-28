@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en-us">
 <head>
   <meta charset="utf-8">
@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Unity WebGL Player | Granny</title>
 
-  <script src="../../cdn.jsdelivr.net/gh/web-ports/granny@main/TemplateData/UnityProgress.js"></script>
-  <script src="../../cdn.jsdelivr.net/gh/web-ports/granny@main/Build/UnityLoader.js"></script>
+  <script src="cdn.jsdelivr.net/gh/web-ports/granny@main/TemplateData/UnityProgress.js"></script>
+  <script src="cdn.jsdelivr.net/gh/web-ports/granny@main/Build/UnityLoader.js"></script>
 
   <style>
     html,
@@ -166,7 +166,8 @@
     }
 
     (async function () {
-      const dataUrl = await mergeFiles(getParts("Build/GrannyPortButBetter.data.unityweb", 1, 29));
+      const buildPrefix = "genizymath.github.io/iframe/Build/";
+      const dataUrl = await mergeFiles(getParts(buildPrefix + "GrannyPortButBetter.data.unityweb", 1, 29));
 
       const originalOpen = XMLHttpRequest.prototype.open;
       XMLHttpRequest.prototype.open = function (method, url) {
@@ -177,7 +178,7 @@
         return originalOpen.call(this, method, url, ...rest);
       };
 
-      UnityLoader.instantiate("unityContainer", "Build/GrannyPortButBetter.json", {
+      UnityLoader.instantiate("unityContainer", buildPrefix + "GrannyPortButBetter.json", {
         onProgress: UnityProgress
       });
 
